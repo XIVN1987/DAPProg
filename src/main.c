@@ -292,8 +292,8 @@ void SerialInit(void)
 	
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 	
-	GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_2, GPIO_Speed_10MHz, GPIO_Mode_AF_PP});			// UART1-TX
-	GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_3, GPIO_Speed_10MHz, GPIO_Mode_IN_FLOATING});		// UART1-RX
+	GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_2, GPIO_Speed_10MHz, GPIO_Mode_AF_PP});			// UART2-TX
+	GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_3, GPIO_Speed_10MHz, GPIO_Mode_IN_FLOATING});		// UART2-RX
 
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 
@@ -310,12 +310,12 @@ void SerialInit(void)
 }
 
 /****************************************************************************************************************************************** 
-* º¯ÊıÃû³Æ:	fputc()
-* ¹¦ÄÜËµÃ÷: printf()µ×²ãÊä³öº¯Êı
-* Êä    Èë: int ch	ÒªÊä³öµÄ×Ö·û
+* å‡½æ•°åç§°:	fputc()
+* åŠŸèƒ½è¯´æ˜: printf()åº•å±‚è¾“å‡ºå‡½æ•°
+* è¾“    å…¥: int ch	è¦è¾“å‡ºçš„å­—ç¬¦
 *			FILE *f
-* Êä    ³ö: ÎŞ
-* ×¢ÒâÊÂÏî: ÎŞ
+* è¾“    å‡º: æ— 
+* æ³¨æ„äº‹é¡¹: æ— 
 ******************************************************************************************************************************************/
 int fputc(int ch, FILE *f)
 {
