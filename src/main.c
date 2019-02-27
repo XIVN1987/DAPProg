@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "stm32f10x.h"
+#include "stm32_conf.h"
 
 #include "SWD_host.h"
 #include "SWD_flash.h"
@@ -290,13 +290,25 @@ void SerialInit(void)
 {
 	USART_InitTypeDef USART_InitStructure;
 	
+#ifdef __STM32F10x_CONF_H
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 	
-	GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_2, GPIO_Speed_10MHz, GPIO_Mode_AF_PP});			// UART1-TX
-	GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_3, GPIO_Speed_10MHz, GPIO_Mode_IN_FLOATING});		// UART1-RX
+	GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_2, GPIO_Speed_10MHz, GPIO_Mode_AF_PP});			// UART2-TX
+	GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_3, GPIO_Speed_10MHz, GPIO_Mode_IN_FLOATING});		// UART2-RX
 
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+#endif
+#ifdef __STM32F4xx_CONF_H
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
+    GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_2, GPIO_Mode_AF, GPIO_Speed_100MHz, GPIO_OType_PP, GPIO_PuPd_NOPULL});
+    GPIO_Init(GPIOA, &(GPIO_InitTypeDef){GPIO_Pin_3, GPIO_Mode_AF, GPIO_Speed_100MHz, GPIO_OType_OD, GPIO_PuPd_NOPULL});
+
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
+#endif
 	USART_InitStructure.USART_BaudRate = 57600;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;

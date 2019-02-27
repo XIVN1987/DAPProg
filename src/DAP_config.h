@@ -2,7 +2,7 @@
 #define __DAP_CONFIG_H__
 
 
-#define CPU_CLOCK               72000000        ///< Specifies the CPU Clock in Hz
+#define CPU_CLOCK               STM32_CPU_CLK        ///< Specifies the CPU Clock in Hz
 
 
 #define IO_PORT_WRITE_CYCLES    2               ///< I/O Cycles: 2=default, 1=Cortex-M0+ fast I/0
@@ -55,7 +55,7 @@ nRESET: Device Reset         | nRESET: Device Reset | Output Open Drain with pul
 
 DAP Hardware I/O Pin Access Functions
 */
-#include "stm32f10x.h"
+#include "stm32_conf.h"
 
 
 // Configure DAP I/O pins ------------------------------
@@ -63,6 +63,15 @@ DAP Hardware I/O Pin Access Functions
 #define SWD_GPIO   	GPIOB
 #define PIN_SWCLK  	GPIO_Pin_13
 #define PIN_SWDIO  	GPIO_Pin_14
+
+
+#ifdef __STM32F10x_CONF_H
+#define STM32_CPU_CLK           72000000       ///< Specifies the CPU Clock in Hz
+#endif
+
+#ifdef __STM32F4xx_CONF_H
+#define STM32_CPU_CLK           168000000       ///< Specifies the CPU Clock in Hz
+#endif
 
 
 /** Setup JTAG I/O pins: TCK, TMS, TDI, TDO, nTRST, and nRESET.
@@ -82,11 +91,22 @@ static void PORT_SWD_SETUP(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
 	
+#ifdef __STM32F10x_CONF_H
 	SWD_GPIO->BSRR = PIN_SWCLK | PIN_SWDIO;
 	
 	GPIO_InitStruct.GPIO_Pin = PIN_SWCLK | PIN_SWDIO;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+#endif
+#ifdef __STM32F4xx_CONF_H
+    SWD_GPIO->BSRRL = PIN_SWCLK | PIN_SWDIO;
+    
+    GPIO_InitStruct.GPIO_Pin = PIN_SWCLK | PIN_SWDIO;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUT;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+#endif
 	GPIO_Init(SWD_GPIO, &GPIO_InitStruct);
 }
 
@@ -97,8 +117,17 @@ static void PORT_OFF(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
 	
+#ifdef __STM32F10x_CONF_H
 	GPIO_InitStruct.GPIO_Pin = PIN_SWCLK | PIN_SWDIO;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+#endif
+#ifdef __STM32F4xx_CONF_H
+    GPIO_InitStruct.GPIO_Pin = PIN_SWCLK | PIN_SWDIO;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStruct.GPIO_OType = GPIO_OType_OD;
+    GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+#endif
 	GPIO_Init(SWD_GPIO, &GPIO_InitStruct);
 }
 
@@ -113,12 +142,22 @@ static __inline uint32_t PIN_SWCLK_TCK_IN(void)
 
 static __inline void PIN_SWCLK_TCK_SET(void)
 {
+#ifdef __STM32F10x_CONF_H
 	SWD_GPIO->BSRR = PIN_SWCLK;
+#endif
+#ifdef __STM32F4xx_CONF_H
+    SWD_GPIO->BSRRL = PIN_SWCLK;
+#endif
 }
 
 static __inline void PIN_SWCLK_TCK_CLR(void)
 {
+#ifdef __STM32F10x_CONF_H
     SWD_GPIO->BRR  = PIN_SWCLK;
+#endif
+#ifdef __STM32F4xx_CONF_H
+    SWD_GPIO->BSRRH = PIN_SWCLK;
+#endif
 }
 
 
@@ -132,12 +171,22 @@ static __inline uint32_t PIN_SWDIO_TMS_IN(void)
 
 static __inline void PIN_SWDIO_TMS_SET(void)
 {
+#ifdef __STM32F10x_CONF_H
     SWD_GPIO->BSRR = PIN_SWDIO;
+#endif
+#ifdef __STM32F4xx_CONF_H
+    SWD_GPIO->BSRRL = PIN_SWDIO;
+#endif
 }
 
 static __inline void PIN_SWDIO_TMS_CLR(void)
 {
+#ifdef __STM32F10x_CONF_H
     SWD_GPIO->BRR  = PIN_SWDIO;
+#endif
+#ifdef __STM32F4xx_CONF_H
+    SWD_GPIO->BSRRH = PIN_SWDIO;
+#endif
 }
 
 
@@ -148,22 +197,41 @@ static __inline uint32_t PIN_SWDIO_IN(void)
 
 static __inline void PIN_SWDIO_OUT(uint32_t bit)
 {
+#ifdef __STM32F10x_CONF_H
     if(bit & 1) SWD_GPIO->BSRR = PIN_SWDIO;
     else        SWD_GPIO->BRR  = PIN_SWDIO;
+#endif
+#ifdef __STM32F4xx_CONF_H
+    if(bit & 1) SWD_GPIO->BSRRL = PIN_SWDIO;
+    else        SWD_GPIO->BSRRH = PIN_SWDIO;
+#endif
 }
 
 static __inline void PIN_SWDIO_OUT_ENABLE(void)
 {
+#ifdef __STM32F10x_CONF_H
 	SWD_GPIO->CRH &= ~(0xF << (14 - 8) * 4);
     SWD_GPIO->CRH |=  (0x3 << (14 - 8) * 4);
 	SWD_GPIO->BRR  = PIN_SWDIO;
+#endif
+#ifdef __STM32F4xx_CONF_H
+    SWD_GPIO->MODER &= ~(0x3 << (14) * 2);
+    SWD_GPIO->MODER |=  (0x1 << (14) * 2);
+    SWD_GPIO->OTYPER &= ~PIN_SWDIO;
+#endif
 }
 
 static __inline void PIN_SWDIO_OUT_DISABLE(void)
 {
+#ifdef __STM32F10x_CONF_H
     SWD_GPIO->CRH &= ~(0xF << (14 - 8) * 4);
 	SWD_GPIO->CRH |=  (0x8 << (14 - 8) * 4);
 	SWD_GPIO->BSRR = PIN_SWDIO;
+#endif
+#ifdef __STM32F4xx_CONF_H
+    SWD_GPIO->MODER &= ~(0x3 << (14) * 2);
+    SWD_GPIO->OTYPER |= PIN_SWDIO;
+#endif
 }
 
 
@@ -232,7 +300,12 @@ static __inline void LED_RUNNING_OUT(uint32_t bit)
 
 static void DAP_SETUP(void)
 {
+#ifdef __STM32F10x_CONF_H
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+#endif
+#ifdef __STM32F4xx_CONF_H
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+#endif
 	
 	PORT_OFF();
 }
