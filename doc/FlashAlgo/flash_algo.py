@@ -1,13 +1,12 @@
-#! C:\Python27\python.exe
-#coding: utf-8
+#! python3
 """
  mbed
  Copyright (c) 2017-2017 ARM Limited
 """
 import os
+import io
 import struct
 import binascii
-import StringIO
 from collections import namedtuple
 
 import jinja2
@@ -115,14 +114,14 @@ class PackFlashAlgo(object):
         if fmt == "hex":
             blob = binascii.b2a_hex(self.algo_data)
             line_list = []
-            for i in xrange(0, len(blob), group_size):
+            for i in range(0, len(blob), group_size):
                 line_list.append('"' + blob[i:i + group_size] + '"')
             return ("\n" + padding).join(line_list)
         elif fmt == "c":
             blob = self.algo_data[:]
             pad_size = 0 if len(blob) % 4 == 0 else 4 - len(blob) % 4
-            blob = blob + "\x00" * pad_size
-            integer_list = struct.unpack("<" + "L" * (len(blob) / 4), blob)
+            blob = blob + b"\x00" * pad_size
+            integer_list = struct.unpack("<" + "L" * (len(blob) // 4), blob)
             line_list = []
             for pos in range(0, len(integer_list), group_size):
                 group = ["0x%08X" % value for value in
@@ -144,7 +143,7 @@ class PackFlashAlgo(object):
             template = jinja2.Template(f.read())
 
             with open(output_path, "wb") as f:
-                f.write(template.render(data_dict))
+                f.write(template.render(data_dict).encode('latin'))
 
 
 class PackFlashInfo(object):
@@ -165,7 +164,7 @@ class PackFlashInfo(object):
         values = struct.unpack(self.FLASH_DEVICE_STRUCT, info_data)
 
         self.version          = values[0]
-        self.name             = values[1].strip("\x00")
+        self.name             = values[1].strip(b"\x00")
         self.type             = values[2]
         self.start            = values[3]
         self.size             = values[4]
@@ -208,10 +207,10 @@ class ElfFileSimple(ELFFile):
     ''' ELF对象包装，以更方便访问 symbols 和 rom '''
 
     def __init__(self, data):
-        super(ElfFileSimple, self).__init__(StringIO.StringIO(data))
+        super(ElfFileSimple, self).__init__(io.BytesIO(data))
 
         self.symbols = {}   # 将 symbol table 中信息读出存入此中，方便访问
-        for symbol in self.get_section_by_name(b".symtab").iter_symbols():
+        for symbol in self.get_section_by_name(".symtab").iter_symbols():
             self.symbols[symbol.name] = SymbolSimple(symbol.name, symbol["st_value"], symbol["st_size"])
 
     def read(self, addr, size):     # 从ELF文件中读取程序数据        
@@ -242,6 +241,6 @@ if __name__ == '__main__':
         if os.path.isfile(name) and name.endswith('.FLM'):
             with open(name, 'rb') as f:
                 algo = PackFlashAlgo(f.read())
-                print algo.flash_info
+                print(algo.flash_info)
                 if 'algo' in data_dict: del data_dict['algo']
                 algo.process_template('c_blob.tmpl', name.replace('.FLM', '.c'), data_dict)

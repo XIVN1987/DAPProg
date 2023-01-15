@@ -29,11 +29,11 @@ const program_target_t flash_algo = {
     // RSP  : stack pointer
     {
         0x20000001,
-        0x20000C00,
-        0x20001000
+        0x20000148,
+        0x2000094C
     },
 
-    0x20000400,  // mem buffer location
+    0x2000014C,  // mem buffer location
     0x20000000,  // location to write prog_blob in target RAM
     sizeof(flash_code),  // prog_blob size
     flash_code,  // address of prog_blob
