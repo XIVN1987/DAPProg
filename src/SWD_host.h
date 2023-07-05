@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "algo/flash_blob.h"
+#include "flash_blob.h"
 
 
 typedef enum {

@@ -20,7 +20,7 @@ error_t target_flash_init(uint32_t flash_start)
         return ERROR_ALGO_DL;
     }
 
-    if (0 == swd_flash_syscall_exec(&flash_algo.sys_call_s, flash_algo.init, flash_start, 0, 0, 0)) {
+    if (0 == swd_flash_syscall_exec(&flash_algo.sys_call_s, flash_algo.init, flash_start, 0, 1, 0)) {
         return ERROR_INIT;
     }
 
@@ -29,6 +29,8 @@ error_t target_flash_init(uint32_t flash_start)
 
 error_t target_flash_uninit(void)
 {
+	swd_flash_syscall_exec(&flash_algo.sys_call_s, flash_algo.uninit, 3, 0, 0, 0);
+	
     swd_set_target_state_hw(RESET_RUN);
 
     swd_off();
