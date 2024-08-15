@@ -51,7 +51,7 @@ error_t target_flash_program_page(uint32_t addr, const uint8_t *buf, uint32_t si
         if (!swd_flash_syscall_exec(&flash_algo.sys_call_s,
                                     flash_algo.program_page,
                                     addr,
-                                    flash_algo.program_buffer_size,
+                                    write_size,
                                     flash_algo.program_buffer,
                                     0)) {
             return ERROR_WRITE;
