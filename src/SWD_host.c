@@ -9,7 +9,7 @@
 #include "debug_cm.h"
 
 
-extern uint32_t Flash_Page_Size;
+#define TARGET_AUTO_INCREMENT_PAGE_SIZE    (1024)
 
 
 #define NVIC_Addr    (0xe000e000)
@@ -461,7 +461,7 @@ uint8_t swd_read_memory(uint32_t address, uint8_t *data, uint32_t size)
     // Read word aligned blocks
     while (size > 3) {
         // Limit to auto increment page size
-        n = Flash_Page_Size - (address & (Flash_Page_Size - 1));
+        n = TARGET_AUTO_INCREMENT_PAGE_SIZE - (address & (TARGET_AUTO_INCREMENT_PAGE_SIZE - 1));
 
         if (size < n) {
             n = size & 0xFFFFFFFC; // Only count complete words remaining
@@ -510,7 +510,7 @@ uint8_t swd_write_memory(uint32_t address, uint8_t *data, uint32_t size)
     // Write word aligned blocks
     while (size > 3) {
         // Limit to auto increment page size
-        n = Flash_Page_Size - (address & (Flash_Page_Size - 1));
+        n = TARGET_AUTO_INCREMENT_PAGE_SIZE - (address & (TARGET_AUTO_INCREMENT_PAGE_SIZE - 1));
 
         if (size < n) {
             n = size & 0xFFFFFFFC; // Only count complete words remaining
